@@ -16,7 +16,11 @@ import java.util.List;
 
 public class CustomNameCommand extends CommandBase {
 
-    private static HashMap<String, String> cnameToSkype = new HashMap<>();
+    enum SubCommand {
+        LIST, ADD, REMOVE;
+    }
+
+    private static HashMap<String, String> cnameToSkype = new HashMap<String, String>();
     private File f = new File("skypecustomnames.txt");
 
     public CustomNameCommand() throws IOException {
@@ -48,19 +52,26 @@ public class CustomNameCommand extends CommandBase {
     public void execute(ICommandSender sender, String[] args) throws CommandException {
         if (args.length < 1)
             throw new WrongUsageException(getCommandUsage(sender));
-        switch (args[0]) {
-            case "list":
+        SubCommand sc;
+        try {
+            sc = SubCommand.valueOf(args[0].toUpperCase());
+        }
+        catch (IllegalArgumentException ex) {
+            throw new WrongUsageException(getCommandUsage(sender));
+        }
+        switch (sc) {
+            case LIST:
                 for (String cname : cnameToSkype.keySet()) {
                     ForgeSkype.sendMessage("%s -> %s", cname, cnameToSkype.get(cname));
                 }
                 return;
-            case "add":
+            case ADD:
                 if (args.length < 3) break;
                 cnameToSkype.put(args[1], args[2]);
                 save();
                 ForgeSkype.sendMessage("Added custom name %s", args[1]);
                 return;
-            case "remove":
+            case REMOVE:
                 if (args.length < 2) break;
                 if (!cnameToSkype.containsKey(args[1]))
                     ForgeSkype.sendMessage("No such custom name exists!");
