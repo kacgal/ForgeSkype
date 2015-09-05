@@ -9,6 +9,8 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 
+import java.io.IOException;
+
 @Mod(modid = ForgeSkype.MODID, version = ForgeSkype.VERSION, name = ForgeSkype.NAME)
 public class ForgeSkype {
     public static final String MODID = "forgeskype";
@@ -35,6 +37,11 @@ public class ForgeSkype {
     @EventHandler
     public void postInit(FMLPostInitializationEvent e) {
         ClientCommandHandler.instance.registerCommand(new SendSkypeMessageCommand());
+        try {
+            ClientCommandHandler.instance.registerCommand(new CustomNameCommand());
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
     }
 
     public static void sendMessage(String msg, String... format) {

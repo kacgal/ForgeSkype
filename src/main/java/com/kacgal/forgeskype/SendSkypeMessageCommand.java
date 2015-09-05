@@ -43,7 +43,11 @@ public class SendSkypeMessageCommand extends CommandBase {
         for (int i = 2; i < args.length; i++)
             msg.append(" ").append(args[i]);
         try {
-            User u = Skype.getUser(args[0]);
+            User u = Skype.getUser(CustomNameCommand.getSkype(args[0]));
+            if (!u.isAuthorized() || u.isBlocked()) {
+                ForgeSkype.sendMessage("Couldn't send message, as %s isn't in your contacts", u.getDisplayName());
+                return;
+            }
             String m = msg.toString();
             u.send(m);
             ForgeSkype.sendMessage("[Skype] -> %s: %s", u.getDisplayName(), m);
