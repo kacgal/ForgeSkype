@@ -1,14 +1,13 @@
 package com.kacgal.forgeskype;
 
-import com.skype.ChatMessage;
-import com.skype.ChatMessageAdapter;
-import com.skype.Skype;
-import com.skype.SkypeException;
+import com.skype.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 
 @Mod(modid = ForgeSkype.MODID, version = ForgeSkype.VERSION, name = ForgeSkype.NAME)
 public class ForgeSkype {
@@ -16,17 +15,29 @@ public class ForgeSkype {
     public static final String VERSION = "1.0";
     public static final String NAME = "Skype for Forge";
 
+    private boolean register = false;
+
     @EventHandler
     public void init(FMLInitializationEvent e) {
         try {
+            SkypeClient.setSilentMode(true);
             Skype.addChatMessageListener(new ChatMessageAdapter() {
                 @Override
                 public void chatMessageReceived(ChatMessage cm) throws SkypeException {
-                    Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(String.format("[Skype] %s: %s", cm.getSender().getDisplayName(), cm.getContent())));
+                    sendMessage("[Skype] %s: %s", cm.getSender().getDisplayName(), cm.getContent());
                 }
             });
         } catch (SkypeException ex) {
             ex.printStackTrace();
         }
+    }
+
+    @EventHandler
+    public void postInit(FMLPostInitializationEvent e) {
+        ClientCommandHandler.instance.registerCommand(new SendSkypeMessageCommand());
+    }
+
+    public static void sendMessage(String msg, String... format) {
+        Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(String.format(msg, format)));
     }
 }
