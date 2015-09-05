@@ -21,8 +21,8 @@ plugins {
 }
 
 version = "1.0"
-group= "com.yourname.modid" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "modid"
+group= "com.kacgal.forgeskype" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "forgeskype"
 
 minecraft {
     version = "1.8-11.14.3.1512"
@@ -38,6 +38,8 @@ minecraft {
 }
 
 dependencies {
+
+    compile "com.github.taksan:skype-java-api:1.7"
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
