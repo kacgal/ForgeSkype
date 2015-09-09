@@ -1,0 +1,14 @@
+### ForgeSkype
+
+Adds Skype messaging to minecraft chat
+
+All commands and messages are customizable in config/forgeskype.cfg
+
+### Download
+Look in the releases tab
+
+### From Source
+
+1. Clone this repo
+2. Setup Gradle
+3. Run 'gradlew build' to compile the mod
