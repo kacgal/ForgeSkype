@@ -1,15 +1,27 @@
 package com.kacgal.forgeskype;
 
+import com.kacgal.forgeskype.commands.CustomNameCommand;
+import com.kacgal.forgeskype.commands.SendSkypeMessageCommand;
 import com.skype.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.List;
 
 @Mod(modid = ForgeSkype.MODID, version = ForgeSkype.VERSION, name = ForgeSkype.NAME)
 public class ForgeSkype {
@@ -17,29 +29,109 @@ public class ForgeSkype {
     public static final String VERSION = "1.0";
     public static final String NAME = "Skype for Forge";
 
+    private static File customNamesFile = new File("skypecustomnames.txt");
+    public static HashMap<String, String> customNamesMap = new HashMap<String, String>();
+
+    private static Configuration config = null;
+
+    @SideOnly(Side.CLIENT)
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent e) {
+        config = new Configuration(e.getSuggestedConfigurationFile());
+        config.load();
+        config.setCategoryComment(Configuration.CATEGORY_GENERAL, "Variables:\n%c = Custom name;\n%u = Username;\n%d = Displayname;\n%m = Message;");
+        for (ConfigKey key : ConfigKey.values()) {
+            getConfigValue(key);
+        }
+        config.save();
+    }
+
+    public static String getConfigValue(ConfigKey key) {
+        return config.getString(key.toString(), Configuration.CATEGORY_GENERAL, key.defaultValue, key.comment);
+    }
+
+    @SideOnly(Side.CLIENT)
     @EventHandler
     public void init(FMLInitializationEvent e) {
         try {
-            SkypeClient.setSilentMode(true);
-            Skype.addChatMessageListener(new ChatMessageAdapter() {
-                @Override
-                public void chatMessageReceived(ChatMessage cm) throws SkypeException {
-                    sendMessage("[Skype] %s: %s", cm.getSender().getDisplayName(), cm.getContent());
-                }
-            });
-        } catch (SkypeException ex) {
+            if (!customNamesFile.exists() && !customNamesFile.createNewFile())
+                throw new IOException("Failed to create customnamesfile.txt");
+        }
+        catch (IOException ex) {
+            System.err.println("Failed to create required files");
             ex.printStackTrace();
+            return;
+        }
+
+        try {
+            loadCustomNames();
+        } catch (IOException ex) {
+            System.err.println("Failed to load custom names");
+            ex.printStackTrace();
+            return;
+        }
+
+        try {
+            connectSkype();
+        } catch (SkypeException ex) {
+            System.err.println("Failed to connect to skype");
+            ex.printStackTrace();
+            return;
+        }
+
+        registerCommands();
+    }
+
+    private void loadCustomNames() throws IOException {
+        List<String> customNames = Files.readAllLines(customNamesFile.toPath(), Charset.defaultCharset());
+        for (String customName : customNames) {
+            String[] c = customName.split("\\|");
+            customNamesMap.put(c[0], c[1]);
         }
     }
 
-    @EventHandler
-    public void postInit(FMLPostInitializationEvent e) {
-        ClientCommandHandler.instance.registerCommand(new SendSkypeMessageCommand());
+    private void connectSkype() throws SkypeException {
+        SkypeClient.setSilentMode(true);
+        Skype.addChatMessageListener(new ChatMessageAdapter() {
+            @Override
+            public void chatMessageReceived(ChatMessage cm) throws SkypeException {
+                sendModMessage(ConfigKey.MESSAGE_RECEIVED_FORMAT, 'd', cm.getSender().getDisplayName(), 'm', cm.getContent());
+            }
+        });
+    }
+
+    private void registerCommands() {
+        ClientCommandHandler.instance.registerCommand(new SendSkypeMessageCommand(getConfigValue(ConfigKey.SEND_MESSAGE_COMMAND)));
+        ClientCommandHandler.instance.registerCommand(new CustomNameCommand(getConfigValue(ConfigKey.CUSTOM_NAMES_COMMAND)));
+    }
+
+
+    public static void saveCustomNames() {
         try {
-            ClientCommandHandler.instance.registerCommand(new CustomNameCommand());
-        } catch (IOException e1) {
-            e1.printStackTrace();
+            customNamesFile.delete();
+            customNamesFile.createNewFile();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(customNamesFile));
+            StringBuilder b = new StringBuilder();
+            for (String cname : customNamesMap.keySet())
+                b.append(cname).append("|").append(customNamesMap.get(cname)).append("\n");
+            writer.write(b.toString());
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("Failed to save custom names");
+            e.printStackTrace();
         }
+    }
+
+    public static void sendModMessage(ConfigKey message, Object... values) {
+        String tf = getConfigValue(message);
+        for (int i = 0; i < values.length; i += 2) {
+            tf = tf.replaceAll("%" + values[i], String.valueOf(values[i + 1]));
+        }
+        sendMessage(getConfigValue(ConfigKey.PREFIX) + " " + tf);
+    }
+
+    private static String parseColors(String s) {
+        return s.replaceAll("&([a-fA-F0-9])", "§$1");
     }
 
     public static void sendMessage(String msg, String... format) {

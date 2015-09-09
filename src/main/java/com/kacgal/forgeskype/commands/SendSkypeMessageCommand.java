@@ -1,37 +1,23 @@
-package com.kacgal.forgeskype;
+package com.kacgal.forgeskype.commands;
 
+import com.kacgal.forgeskype.ConfigKey;
+import com.kacgal.forgeskype.ForgeSkype;
 import com.skype.Skype;
 import com.skype.SkypeException;
 import com.skype.User;
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 
-import java.util.ArrayList;
-import java.util.List;
+public class SendSkypeMessageCommand extends BaseCommand {
 
-public class SendSkypeMessageCommand extends CommandBase {
-    @Override
-    public String getName() {
-        return "ssm";
-    }
-
-    @Override
-    public List getAliases() {
-        return new ArrayList(){{
-            add("sm");
-        }};
-    }
-
-    @Override
-    public boolean canCommandSenderUse(ICommandSender sender) {
-        return true;
+    public SendSkypeMessageCommand(String cmd) {
+        super(cmd);
     }
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/ssm <skype user> <message>";
+        return "/" + getName() + " <skype user> <message>";
     }
 
     @Override
@@ -45,12 +31,12 @@ public class SendSkypeMessageCommand extends CommandBase {
         try {
             User u = Skype.getUser(CustomNameCommand.getSkype(args[0]));
             if (!u.isAuthorized() || u.isBlocked()) {
-                ForgeSkype.sendMessage("Couldn't send message, as %s isn't in your contacts", u.getDisplayName());
+                ForgeSkype.sendModMessage(ConfigKey.ERR_NOT_FRIEND, 'd', u.getDisplayName());
                 return;
             }
             String m = msg.toString();
             u.send(m);
-            ForgeSkype.sendMessage("[Skype] -> %s: %s", u.getDisplayName(), m);
+            ForgeSkype.sendModMessage(ConfigKey.MESSAGE_SENT_FORMAT, 'd', u.getDisplayName(), 'm', m);
         } catch (SkypeException e) {
             ForgeSkype.sendMessage("Failed to send message");
         }
