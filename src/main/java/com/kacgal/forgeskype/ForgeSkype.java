@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,7 +40,13 @@ public class ForgeSkype {
     public void preInit(FMLPreInitializationEvent e) {
         config = new Configuration(e.getSuggestedConfigurationFile());
         config.load();
-        config.setCategoryComment(Configuration.CATEGORY_GENERAL, "Variables:\n%c = Custom name;\n%u = Username;\n%d = Displayname;\n%m = Message;");
+        config.setCategoryComment(Configuration.CATEGORY_GENERAL, StringUtils.join(new String[] {
+                "Variables:",
+                "%c: Custom name",
+                "%u: Username",
+                "%d: Display name",
+                "%m: Message"
+        }, '\n'));
         for (ConfigKey key : ConfigKey.values()) {
             getConfigValue(key);
         }
@@ -95,7 +102,7 @@ public class ForgeSkype {
         Skype.addChatMessageListener(new ChatMessageAdapter() {
             @Override
             public void chatMessageReceived(ChatMessage cm) throws SkypeException {
-                sendModMessage(ConfigKey.MESSAGE_RECEIVED_FORMAT, 'd', cm.getSender().getDisplayName(), 'm', cm.getContent());
+                sendModMessage(ConfigKey.MESSAGE_RECEIVED_FORMAT, getUserVars(cm.getSender().getId(), 'm', cm.getContent()));
             }
         });
     }
@@ -123,7 +130,7 @@ public class ForgeSkype {
     }
 
     public static void sendModMessage(ConfigKey message, Object... values) {
-        String tf = getConfigValue(message);
+        String tf = parseColors(getConfigValue(message));
         for (int i = 0; i < values.length; i += 2) {
             tf = tf.replaceAll("%" + values[i], String.valueOf(values[i + 1]));
         }
@@ -136,5 +143,25 @@ public class ForgeSkype {
 
     public static void sendMessage(String msg, String... format) {
         Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText(String.format(msg, format)));
+    }
+
+    public static Object[] getUserVars(String cname, Object... args) {
+        User u = Skype.getUser(getSkype(cname));
+        Object[] a = new Object[] {
+                'd', cname,
+                'u', u.getId(),
+                'c', cname
+        };
+        try {
+            a[1] = u.getDisplayName();
+        } catch (SkypeException ignored) {}
+        Object[] b = new Object[a.length + args.length];
+        System.arraycopy(a, 0, b, 0, a.length);
+        System.arraycopy(args, 0, b, a.length, args.length);
+        return b;
+    }
+
+    public static String getSkype(String name) {
+        return customNamesMap.containsKey(name) ? customNamesMap.get(name) : name;
     }
 }

@@ -29,14 +29,14 @@ public class SendSkypeMessageCommand extends BaseCommand {
         for (int i = 2; i < args.length; i++)
             msg.append(" ").append(args[i]);
         try {
-            User u = Skype.getUser(CustomNameCommand.getSkype(args[0]));
+            User u = Skype.getUser(ForgeSkype.getSkype(args[0]));
             if (!u.isAuthorized() || u.isBlocked()) {
-                ForgeSkype.sendModMessage(ConfigKey.ERR_NOT_FRIEND, 'd', u.getDisplayName());
+                ForgeSkype.sendModMessage(ConfigKey.ERR_NOT_FRIEND, ForgeSkype.getUserVars(args[0]));
                 return;
             }
             String m = msg.toString();
             u.send(m);
-            ForgeSkype.sendModMessage(ConfigKey.MESSAGE_SENT_FORMAT, 'd', u.getDisplayName(), 'm', m);
+            ForgeSkype.sendModMessage(ConfigKey.MESSAGE_SENT_FORMAT, ForgeSkype.getUserVars(args[0], 'm', m));
         } catch (SkypeException e) {
             ForgeSkype.sendMessage("Failed to send message");
         }

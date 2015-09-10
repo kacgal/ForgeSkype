@@ -2,8 +2,6 @@ package com.kacgal.forgeskype.commands;
 
 import com.kacgal.forgeskype.ConfigKey;
 import com.kacgal.forgeskype.ForgeSkype;
-import com.skype.Skype;
-import com.skype.SkypeException;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
@@ -38,12 +36,7 @@ public class CustomNameCommand extends BaseCommand {
             case LIST:
                 ForgeSkype.sendModMessage(ConfigKey.CUSTOMNAMES_HEADER);
                 for (String cname : ForgeSkype.customNamesMap.keySet()) {
-                    String uname = ForgeSkype.customNamesMap.get(cname);
-                    try {
-                        ForgeSkype.sendModMessage(ConfigKey.CUSTOMNAMES_CONTENT, 'c', cname, 'd', Skype.getUser(getSkype(uname)).getDisplayName(), 'u', uname);
-                    } catch (SkypeException e) {
-                        e.printStackTrace();
-                    }
+                    ForgeSkype.sendModMessage(ConfigKey.CUSTOMNAMES_CONTENT, ForgeSkype.getUserVars(cname));
                 }
                 ForgeSkype.sendModMessage(ConfigKey.CUSTOMNAMES_FOOTER);
                 return;
@@ -64,14 +57,5 @@ public class CustomNameCommand extends BaseCommand {
                 return;
         }
         throw new WrongUsageException(getCommandUsage(sender));
-    }
-
-    public static String getSkype(String name) {
-        for (String cname : ForgeSkype.customNamesMap.keySet()) {
-            if (cname.equals(name)) {
-                return ForgeSkype.customNamesMap.get(cname);
-            }
-        }
-        return name;
     }
 }
