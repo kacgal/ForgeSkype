@@ -63,25 +63,17 @@ public class ForgeSkype {
         try {
             if (!customNamesFile.exists() && !customNamesFile.createNewFile())
                 throw new IOException("Failed to create customnamesfile.txt");
+            loadCustomNames();
+
+            connectSkype();
         }
         catch (IOException ex) {
-            System.err.println("Failed to create required files");
-            ex.printStackTrace();
-            return;
-        }
-
-        try {
-            loadCustomNames();
-        } catch (IOException ex) {
             System.err.println("Failed to load custom names");
             ex.printStackTrace();
             return;
         }
-
-        try {
-            connectSkype();
-        } catch (SkypeException ex) {
-            System.err.println("Failed to connect to skype");
+        catch (SkypeException ex) {
+            System.err.println("Failed to connect to Skype");
             ex.printStackTrace();
             return;
         }
@@ -102,7 +94,7 @@ public class ForgeSkype {
         Skype.addChatMessageListener(new ChatMessageAdapter() {
             @Override
             public void chatMessageReceived(ChatMessage cm) throws SkypeException {
-                sendModMessage(ConfigKey.MESSAGE_RECEIVED_FORMAT, getUserVars(cm.getSender().getId(), 'm', cm.getContent()));
+                sendModMessage(ConfigKey.MESSAGE_RECEIVED_FORMAT, getUserVars(cm.getSenderId(), 'm', cm.getContent()));
             }
         });
     }
