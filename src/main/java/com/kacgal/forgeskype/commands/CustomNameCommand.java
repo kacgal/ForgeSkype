@@ -17,20 +17,20 @@ public class CustomNameCommand extends BaseCommand {
     }
 
     @Override
-    public String getCommandUsage(ICommandSender sender) {
-        return "/" + getName() + " <add|list|remove> [custom name] [skype name]";
+    public String getCommandArguments() {
+        return "<add|list|remove> [custom name] [skype name]";
     }
 
     @Override
     public void execute(ICommandSender sender, String[] args) throws CommandException {
         if (args.length < 1)
-            throw new WrongUsageException(getCommandUsage(sender));
+            throw new WrongUsageException(getCommandUsage());
         SubCommand sc;
         try {
             sc = SubCommand.valueOf(args[0].toUpperCase());
         }
         catch (IllegalArgumentException ex) {
-            throw new WrongUsageException(getCommandUsage(sender));
+            throw new WrongUsageException(getCommandUsage());
         }
         switch (sc) {
             case LIST:
@@ -56,6 +56,6 @@ public class CustomNameCommand extends BaseCommand {
                 }
                 return;
         }
-        throw new WrongUsageException(getCommandUsage(sender));
+        throw new WrongUsageException(getCommandUsage());
     }
 }

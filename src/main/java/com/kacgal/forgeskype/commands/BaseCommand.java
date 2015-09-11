@@ -23,8 +23,16 @@ public abstract class BaseCommand extends CommandBase {
     }
 
     @Override
-    public abstract String getCommandUsage(ICommandSender sender);
+    public String getCommandUsage(ICommandSender sender) {
+        return getCommandUsage();
+    }
+
+    public String getCommandUsage() {
+        return "/" + getName() + " " + getCommandArguments();
+    }
 
     @Override
     public abstract void execute(ICommandSender sender, String[] args) throws CommandException;
+
+    public abstract String getCommandArguments();
 }

@@ -16,14 +16,14 @@ public class SendSkypeMessageCommand extends BaseCommand {
     }
 
     @Override
-    public String getCommandUsage(ICommandSender sender) {
-        return "/" + getName() + " <skype user> <message>";
+    public String getCommandArguments() {
+        return "<skype user> <message>";
     }
 
     @Override
     public void execute(ICommandSender sender, String[] args) throws CommandException {
         if (args.length < 2) {
-            throw new WrongUsageException(getCommandUsage(sender));
+            throw new WrongUsageException(getCommandUsage());
         }
         StringBuilder msg = new StringBuilder(args[1]);
         for (int i = 2; i < args.length; i++)
