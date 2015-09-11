@@ -181,11 +181,11 @@ public class ForgeSkype {
         for (int i = 0; i < values.length; i += 2) {
             tf = tf.replaceAll("%" + values[i], String.valueOf(values[i + 1]));
         }
-        sendMessage(getConfigValue(ConfigKey.PREFIX) + " " + tf);
+        sendMessage(parseColors(getConfigValue(ConfigKey.PREFIX)) + " " + tf);
     }
 
     private static String parseColors(String s) {
-        return s.replaceAll("&([a-fA-F0-9])", "§$1");
+        return s.replaceAll("&([a-fA-F0-9])", "\u00A7$1");
     }
 
     public static void sendMessage(String msg, String... format) {
