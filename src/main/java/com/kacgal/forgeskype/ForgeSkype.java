@@ -1,5 +1,6 @@
 package com.kacgal.forgeskype;
 
+import com.kacgal.forgeskype.commands.CallCommand;
 import com.kacgal.forgeskype.commands.CustomNameCommand;
 import com.kacgal.forgeskype.commands.SendSkypeMessageCommand;
 import com.skype.*;
@@ -21,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,6 +34,9 @@ public class ForgeSkype {
 
     private static File customNamesFile = new File("skypecustomnames.txt");
     public static HashMap<String, String> customNamesMap = new HashMap<String, String>();
+
+    private List<Call> heldCalls = new ArrayList<Call>();
+    public static Call latestCall = null;
 
     private static Configuration config = null;
 
@@ -45,7 +50,8 @@ public class ForgeSkype {
                 "%c: Custom name",
                 "%u: Username",
                 "%d: Display name",
-                "%m: Message"
+                "%m: Message",
+                "%h: Held/Ongoing (for calls)"
         }, '\n'));
         for (ConfigKey key : ConfigKey.values()) {
             getConfigValue(key);
@@ -97,11 +103,60 @@ public class ForgeSkype {
                 sendModMessage(ConfigKey.MESSAGE_RECEIVED_FORMAT, getUserVars(cm.getSenderId(), 'm', cm.getContent()));
             }
         });
+        Skype.addCallMonitorListener(new CallMonitorListener() {
+            @Override
+            public void callMonitor(Call call, Call.Status status) throws SkypeException {
+                switch (status) {
+                    case RINGING:
+                        // Call incomming/outgoing
+                        if (!CallCommand.isOutgoing()) {
+                            latestCall = call;
+                            sendModMessage(ConfigKey.CALL_RECEIVED_MESSAGE, getUserVars(call.getPartnerId()));
+                        }
+                        break;
+                    case REFUSED:
+                        // Call is refused
+                        if (CallCommand.isOutgoing()) {
+                            sendModMessage(ConfigKey.CALL_REFUSED_REMOTE_MESSAGE, getUserVars(call.getPartnerId()));
+                        }
+                        else {
+                            sendModMessage(ConfigKey.CALL_REFUSED_LOCAL_MESSAGE, getUserVars(call.getPartnerId()));
+                        }
+                        break;
+                    case INPROGRESS:
+                        // Call started/resumed
+                        if (heldCalls.contains(call)) {
+                            sendModMessage(ConfigKey.CALL_RESUMED_MESSAGE, getUserVars(call.getPartnerId()));
+                            heldCalls.remove(call);
+                        }
+                        else if (CallCommand.isOutgoing()) {
+                            sendModMessage(ConfigKey.CALL_ACCEPTED_MESSAGE, getUserVars(call.getPartnerId()));
+                            CallCommand.setOutgoing(false);
+                        }
+                        break;
+                    case LOCALHOLD:
+                    case REMOTEHOLD:
+                        // Call held locally/remotely
+                        heldCalls.add(call);
+                        if (!CallCommand.isOutgoing()) {
+                            sendModMessage(ConfigKey.CALL_HELD_MESSAGE, getUserVars(call.getPartnerId()));
+                        }
+                        break;
+                    case FINISHED:
+                        //  Call ended
+                        if (!CallCommand.isOutgoing()) {
+                            sendModMessage(ConfigKey.CALL_ENDED_MESSAGE, getUserVars(call.getPartnerId()));
+                        }
+                        break;
+                }
+            }
+        });
     }
 
     private void registerCommands() {
         ClientCommandHandler.instance.registerCommand(new SendSkypeMessageCommand(getConfigValue(ConfigKey.SEND_MESSAGE_COMMAND)));
         ClientCommandHandler.instance.registerCommand(new CustomNameCommand(getConfigValue(ConfigKey.CUSTOM_NAMES_COMMAND)));
+        ClientCommandHandler.instance.registerCommand(new CallCommand(getConfigValue(ConfigKey.CALL_COMMAND)));
     }
 
 
