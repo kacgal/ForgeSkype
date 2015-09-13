@@ -163,7 +163,7 @@ public class ForgeSkype {
                 'c', cname
         };
         try {
-            a[1] = u.getDisplayName();
+            a[0] = u.getDisplayName();
         } catch (SkypeException ignored) {}
         Object[] b = new Object[a.length + args.length];
         System.arraycopy(a, 0, b, 0, a.length);
