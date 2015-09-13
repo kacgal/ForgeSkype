@@ -24,6 +24,7 @@ Arguments in <> are required, while ones in [] are optional
   remove <custom name>: Removes a custom name
   
 /ssm <custom name or skype username> <message>: Command to send messages
+Use a comma-seperated list to create a group, for example "user1,user2,user3"
 
 /scall: Command to manage calls
   accept: Accepts the incomming call
