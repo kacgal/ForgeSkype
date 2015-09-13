@@ -9,7 +9,7 @@ import net.minecraft.command.WrongUsageException;
 public class CustomNameCommand extends BaseCommand {
 
     enum SubCommand {
-        LIST, ADD, REMOVE;
+        LIST, ADD, RENAME, REMOVE;
     }
 
     public CustomNameCommand(String cmd) {
@@ -45,6 +45,16 @@ public class CustomNameCommand extends BaseCommand {
                 ForgeSkype.customNamesMap.put(args[1], args[2]);
                 ForgeSkype.saveCustomNames();
                 ForgeSkype.sendMessage("Added custom name %s", args[1]);
+                return;
+            case RENAME:
+                if (args.length < 3) break;
+                if (!ForgeSkype.customNamesMap.containsKey(args[1]))
+                    ForgeSkype.sendMessage("No such custom name exists!");
+                else {
+                    ForgeSkype.customNamesMap.put(args[2], ForgeSkype.customNamesMap.remove(args[1]));
+                    ForgeSkype.saveCustomNames();
+                    ForgeSkype.sendMessage("Renamed %s to %s", args[1], args[2]);
+                }
                 return;
             case REMOVE:
                 if (args.length < 2) break;
