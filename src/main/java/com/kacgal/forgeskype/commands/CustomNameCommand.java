@@ -52,6 +52,8 @@ public class CustomNameCommand extends BaseCommand {
                     ForgeSkype.sendMessage("No such custom name exists!");
                 else {
                     ForgeSkype.customNamesMap.put(args[2], ForgeSkype.customNamesMap.remove(args[1]));
+                    if (ForgeSkype.groupChats.containsKey(args[1]))
+                        ForgeSkype.groupChats.put(args[2], ForgeSkype.groupChats.get(args[1]));
                     ForgeSkype.saveCustomNames();
                     ForgeSkype.sendMessage("Renamed %s to %s", args[1], args[2]);
                 }
