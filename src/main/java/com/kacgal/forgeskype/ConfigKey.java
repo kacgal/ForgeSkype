@@ -21,7 +21,8 @@ public enum ConfigKey {
     CALL_ACCEPTED_MESSAGE("You are now in a call with %d", "Message when user accepts your call"),
     CALLLIST_HEADER("--- Calls ---", "Displayed before calls"),
     CALLLIST_FOOTER("-------------", "Displayed after calls"),
-    CALLLIST_CONTENT("%d (%h)", "Format for displaying calls");
+    CALLLIST_CONTENT("%d (%h)", "Format for displaying calls"),
+    GROUP_MESSAGE_RECEIVED_FORMAT("%d -> %g: %m", "Format for messages sent to group");
 
     public final String comment;
     public final String defaultValue;

@@ -35,8 +35,10 @@ public class ForgeSkype {
     private static File customNamesFile = new File("skypecustomnames.txt");
     public static HashMap<String, String> customNamesMap = new HashMap<String, String>();
 
-    private List<Call> heldCalls = new ArrayList<Call>();
+    public static List<Call> heldCalls = new ArrayList<Call>();
     public static Call latestCall = null;
+
+    public static HashMap<String, Chat> groupChats = new HashMap<String, Chat>();
 
     private static Configuration config = null;
 
@@ -51,7 +53,8 @@ public class ForgeSkype {
                 "%u: Username",
                 "%d: Display name",
                 "%m: Message",
-                "%h: Held/Ongoing (for calls)"
+                "%h: Held/Ongoing (for calls)",
+                "%g: Group"
         }, '\n'));
         for (ConfigKey key : ConfigKey.values()) {
             getConfigValue(key);
@@ -72,6 +75,7 @@ public class ForgeSkype {
             loadCustomNames();
 
             connectSkype();
+            loadSkypeGroups();
         }
         catch (IOException ex) {
             System.err.println("Failed to load custom names");
@@ -100,57 +104,16 @@ public class ForgeSkype {
         Skype.addChatMessageListener(new ChatMessageAdapter() {
             @Override
             public void chatMessageReceived(ChatMessage cm) throws SkypeException {
-                sendModMessage(ConfigKey.MESSAGE_RECEIVED_FORMAT, getUserVars(cm.getSenderId(), 'm', cm.getContent()));
+                sendModMessage(cm.getChat().getAllMembers().length == 2 ? ConfigKey.MESSAGE_RECEIVED_FORMAT : ConfigKey.GROUP_MESSAGE_RECEIVED_FORMAT, getUserVars(cm.getSenderId(), 'm', cm.getContent(), 'g', getCustomGroupName(cm.getChat())));
             }
         });
-        Skype.addCallMonitorListener(new CallMonitorListener() {
-            @Override
-            public void callMonitor(Call call, Call.Status status) throws SkypeException {
-                switch (status) {
-                    case RINGING:
-                        // Call incomming/outgoing
-                        if (!CallCommand.isOutgoing()) {
-                            latestCall = call;
-                            sendModMessage(ConfigKey.CALL_RECEIVED_MESSAGE, getUserVars(call.getPartnerId()));
-                        }
-                        break;
-                    case REFUSED:
-                        // Call is refused
-                        if (CallCommand.isOutgoing()) {
-                            sendModMessage(ConfigKey.CALL_REFUSED_REMOTE_MESSAGE, getUserVars(call.getPartnerId()));
-                        }
-                        else {
-                            sendModMessage(ConfigKey.CALL_REFUSED_LOCAL_MESSAGE, getUserVars(call.getPartnerId()));
-                        }
-                        break;
-                    case INPROGRESS:
-                        // Call started/resumed
-                        if (heldCalls.contains(call)) {
-                            sendModMessage(ConfigKey.CALL_RESUMED_MESSAGE, getUserVars(call.getPartnerId()));
-                            heldCalls.remove(call);
-                        }
-                        else if (CallCommand.isOutgoing()) {
-                            sendModMessage(ConfigKey.CALL_ACCEPTED_MESSAGE, getUserVars(call.getPartnerId()));
-                            CallCommand.setOutgoing(false);
-                        }
-                        break;
-                    case LOCALHOLD:
-                    case REMOTEHOLD:
-                        // Call held locally/remotely
-                        heldCalls.add(call);
-                        if (!CallCommand.isOutgoing()) {
-                            sendModMessage(ConfigKey.CALL_HELD_MESSAGE, getUserVars(call.getPartnerId()));
-                        }
-                        break;
-                    case FINISHED:
-                        //  Call ended
-                        if (!CallCommand.isOutgoing()) {
-                            sendModMessage(ConfigKey.CALL_ENDED_MESSAGE, getUserVars(call.getPartnerId()));
-                        }
-                        break;
-                }
-            }
-        });
+        Skype.addCallMonitorListener(new CallMonitor());
+    }
+
+    private void loadSkypeGroups() throws SkypeException {
+        for (Chat c : Skype.getAllChats())
+            if (customNamesMap.containsValue(c.getId()))
+                groupChats.put(getCustomGroupName(c), c);
     }
 
     private void registerCommands() {
@@ -179,7 +142,7 @@ public class ForgeSkype {
     public static void sendModMessage(ConfigKey message, Object... values) {
         String tf = parseColors(getConfigValue(message));
         for (int i = 0; i < values.length; i += 2) {
-            tf = tf.replaceAll("%" + values[i], String.valueOf(values[i + 1]));
+            tf = tf.replaceAll("%" + values[i], String.valueOf(values[i + 1]).replaceAll("\\$", "\\\\\\$"));
         }
         sendMessage(parseColors(getConfigValue(ConfigKey.PREFIX)) + " " + tf);
     }
@@ -210,5 +173,12 @@ public class ForgeSkype {
 
     public static String getSkype(String name) {
         return customNamesMap.containsKey(name) ? customNamesMap.get(name) : name;
+    }
+
+    public static String getCustomGroupName(Chat c) {
+        for (String s : customNamesMap.keySet())
+            if (customNamesMap.get(s).equals(c.getId()))
+                return s;
+        return "Unknown";
     }
 }
