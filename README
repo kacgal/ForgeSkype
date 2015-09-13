@@ -12,3 +12,25 @@ Look in the releases tab
 1. Clone this repo
 2. Setup Gradle
 3. Run 'gradlew build' to compile the mod
+
+### Usage (Commands are the default ones, can be customized in the config)
+
+Arguments in <> are required, while ones in [] are optional
+
+/cname: Command to manage custom names
+  list: Lists all custom names
+  add <custom name> <skype username>: Adds a custom name
+  rename <old custom name> <new custom name>: Renames custom name
+  remove <custom name>: Removes a custom name
+  
+/ssm <custom name or skype username> <message>: Command to send messages
+
+/scall: Command to manage calls
+  accept: Accepts the incomming call
+  deny: Denies the incomming call
+  call <custom name or skype username>: Places a call to a user
+  end [custom name or skype username]: No argument ends the current call, specify one to end a specific call
+  hold: Puts the current call on hold
+  list: Lists all ongoing calls
+  resume <custom name or skype username>: Resumes a held call
+  
