@@ -163,8 +163,17 @@ public class ForgeSkype {
                 'c', cname
         };
         try {
-            a[1] = u.getDisplayName();
-        } catch (SkypeException ignored) {}
+            if (groupChats.containsKey(cname)) {
+                Chat c = groupChats.get(cname);
+                a[1] = c.getWindowTitle();
+                a[3] = StringUtils.join(c.getAllMembers(), ", ");
+            }
+            else {
+                a[1] = u.getDisplayName();
+            }
+        } catch (SkypeException ex) {
+            ex.printStackTrace();
+        }
         Object[] b = new Object[a.length + args.length];
         System.arraycopy(a, 0, b, 0, a.length);
         System.arraycopy(args, 0, b, a.length, args.length);
