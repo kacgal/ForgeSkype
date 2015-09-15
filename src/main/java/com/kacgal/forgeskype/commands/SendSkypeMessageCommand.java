@@ -65,7 +65,9 @@ public class SendSkypeMessageCommand extends BaseCommand {
                     ForgeSkype.sendModMessage(ConfigKey.MESSAGE_SENT_FORMAT, ForgeSkype.getUserVars(args[0], 'm', m));
                 }
                 else {
-                    ForgeSkype.sendModMessage(ConfigKey.GROUP_MESSAGE_RECEIVED_FORMAT, 'g', ForgeSkype.getCustomGroupName(c), 'm', m, 'd', "me");
+                    String groupName = ForgeSkype.getCustomGroupName(c);
+                    args[0] = groupName;
+                    ForgeSkype.sendModMessage(ConfigKey.GROUP_MESSAGE_RECEIVED_FORMAT, 'g', groupName, 'm', m, 'd', "me");
                 }
                 ForgeSkype.lastMessagedUser = args[0];
             }
