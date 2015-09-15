@@ -201,7 +201,7 @@ public class ForgeSkype {
 
     public static String getCustomGroupName(Chat c) {
         try {
-            if (c.getAllMembers().length < 3)
+            if (c.getAllMembers().length == 2)
                 return "Unknown";
         } catch (SkypeException ignored) {}
         for (String s : customNamesMap.keySet())
