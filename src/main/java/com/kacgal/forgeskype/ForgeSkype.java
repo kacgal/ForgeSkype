@@ -1,8 +1,6 @@
 package com.kacgal.forgeskype;
 
-import com.kacgal.forgeskype.commands.CallCommand;
-import com.kacgal.forgeskype.commands.CustomNameCommand;
-import com.kacgal.forgeskype.commands.SendSkypeMessageCommand;
+import com.kacgal.forgeskype.commands.*;
 import com.skype.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
@@ -41,6 +39,8 @@ public class ForgeSkype {
     public static HashMap<String, Chat> groupChats = new HashMap<String, Chat>();
 
     private static Configuration config = null;
+
+    public static String lastMessagedUser = "";
 
     @SideOnly(Side.CLIENT)
     @EventHandler
@@ -104,6 +104,7 @@ public class ForgeSkype {
         Skype.addChatMessageListener(new ChatMessageAdapter() {
             @Override
             public void chatMessageReceived(ChatMessage cm) throws SkypeException {
+                lastMessagedUser = cm.getSenderId();
                 sendModMessage(cm.getChat().getAllMembers().length == 2 ? ConfigKey.MESSAGE_RECEIVED_FORMAT : ConfigKey.GROUP_MESSAGE_RECEIVED_FORMAT, getUserVars(cm.getSenderId(), 'm', cm.getContent(), 'g', getCustomGroupName(cm.getChat())));
             }
         });
@@ -120,6 +121,7 @@ public class ForgeSkype {
         ClientCommandHandler.instance.registerCommand(new SendSkypeMessageCommand(getConfigValue(ConfigKey.SEND_MESSAGE_COMMAND)));
         ClientCommandHandler.instance.registerCommand(new CustomNameCommand(getConfigValue(ConfigKey.CUSTOM_NAMES_COMMAND)));
         ClientCommandHandler.instance.registerCommand(new CallCommand(getConfigValue(ConfigKey.CALL_COMMAND)));
+        ClientCommandHandler.instance.registerCommand(new QuickRespondCommand(getConfigValue(ConfigKey.QUICK_RESPOND_COMMAND)));
     }
 
 

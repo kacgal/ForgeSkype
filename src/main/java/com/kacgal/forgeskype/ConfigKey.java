@@ -22,7 +22,8 @@ public enum ConfigKey {
     CALLLIST_HEADER("--- Calls ---", "Displayed before calls"),
     CALLLIST_FOOTER("-------------", "Displayed after calls"),
     CALLLIST_CONTENT("%d (%h)", "Format for displaying calls"),
-    GROUP_MESSAGE_RECEIVED_FORMAT("%d -> %g: %m", "Format for messages sent to group");
+    GROUP_MESSAGE_RECEIVED_FORMAT("%d -> %g: %m", "Format for messages sent to group"),
+    QUICK_RESPOND_COMMAND("qr", "Command to respond to the latest message");
 
     public final String comment;
     public final String defaultValue;
