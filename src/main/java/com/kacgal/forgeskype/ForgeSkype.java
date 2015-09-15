@@ -170,6 +170,9 @@ public class ForgeSkype {
             }
             else {
                 a[1] = u.getDisplayName();
+                if (a[1].equals("")) {
+                    a[1] = u.getFullName();
+                }
             }
         } catch (SkypeException ex) {
             ex.printStackTrace();
