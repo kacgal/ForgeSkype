@@ -190,6 +190,10 @@ public class ForgeSkype {
     }
 
     public static String getCustomGroupName(Chat c) {
+        try {
+            if (c.getAllMembers().length < 3)
+                return "Unknown";
+        } catch (SkypeException ignored) {}
         for (String s : customNamesMap.keySet())
             if (customNamesMap.get(s).equals(c.getId()))
                 return s;
