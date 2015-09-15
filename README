@@ -26,6 +26,8 @@ Arguments in <> are required, while ones in [] are optional
 /ssm <custom name or skype username> <message>: Command to send messages
 Use a comma-seperated list to create a group, for example "user1,user2,user3"
 
+/qr <message>: Command to quickly respond to the latest user you messaged
+
 /scall: Command to manage calls
   accept: Accepts the incomming call
   deny: Denies the incomming call
