@@ -104,8 +104,18 @@ public class ForgeSkype {
         Skype.addChatMessageListener(new ChatMessageAdapter() {
             @Override
             public void chatMessageReceived(ChatMessage cm) throws SkypeException {
-                lastMessagedUser = cm.getSenderId();
-                sendModMessage(cm.getChat().getAllMembers().length == 2 ? ConfigKey.MESSAGE_RECEIVED_FORMAT : ConfigKey.GROUP_MESSAGE_RECEIVED_FORMAT, getUserVars(cm.getSenderId(), 'm', cm.getContent(), 'g', getCustomGroupName(cm.getChat())));
+                ConfigKey toSend;
+                String sender = cm.getSenderId();
+                String groupName = getCustomGroupName(cm.getChat());
+                if (cm.getChat().getAllMembers().length == 2) {
+                    toSend = ConfigKey.MESSAGE_RECEIVED_FORMAT;
+                    lastMessagedUser = sender;
+                }
+                else {
+                    toSend = ConfigKey.GROUP_MESSAGE_RECEIVED_FORMAT;
+                    lastMessagedUser = groupName;
+                }
+                sendModMessage(toSend, getUserVars(sender, 'm', cm.getContent(), 'g', groupName));
             }
         });
         Skype.addCallMonitorListener(new CallMonitor());

@@ -67,6 +67,7 @@ public class SendSkypeMessageCommand extends BaseCommand {
                 else {
                     ForgeSkype.sendModMessage(ConfigKey.GROUP_MESSAGE_RECEIVED_FORMAT, 'g', ForgeSkype.getCustomGroupName(c), 'm', m, 'd', "me");
                 }
+                ForgeSkype.lastMessagedUser = args[0];
             }
             else {
                 ForgeSkype.sendMessage("Failed to send message");
