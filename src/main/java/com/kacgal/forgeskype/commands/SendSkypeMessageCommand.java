@@ -38,15 +38,6 @@ public class SendSkypeMessageCommand extends BaseCommand {
             }
             try {
                 c = Skype.chat(StringUtils.join(us, ","));
-                int i = 0;
-                while (true) {
-                    if (ForgeSkype.groupChats.containsKey("g" + i)) continue;
-                    ForgeSkype.groupChats.put("g" + i, c);
-                    ForgeSkype.customNamesMap.put("g" + i, c.getId());
-                    ForgeSkype.saveCustomNames();
-                    ForgeSkype.sendMessage("Created group with the name g" + i);
-                    break;
-                }
             } catch (SkypeException e) {
                 ForgeSkype.sendMessage("Failed to send message");
             }

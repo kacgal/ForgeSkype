@@ -191,6 +191,15 @@ public class ForgeSkype {
         for (String s : customNamesMap.keySet())
             if (customNamesMap.get(s).equals(c.getId()))
                 return s;
-        return "Unknown";
+        int i = 0;
+        while (true) {
+            if (groupChats.containsKey("g" + i)) continue;
+            groupChats.put("g" + i, c);
+            customNamesMap.put("g" + i, c.getId());
+            saveCustomNames();
+            sendMessage("Created group with the name g" + i);
+            break;
+        }
+        return "g" + i;
     }
 }
